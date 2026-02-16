@@ -30,99 +30,32 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
-    /* --- CORE DATA --- */
-    let products = []; // Изначально пусто, загружаем из файла
-    let cart = JSON.parse(localStorage.getItem('ft_cart')) || [];
-    const MASTER_KEY = "1234"; 
-
-    /* --- INITIALIZATION (ИСПРАВЛЕНО) --- */
-  async function init() {
-    try {
-        // Пытаемся загрузить файл, созданный ботом
-        const response = await fetch('products.json');
-        if (response.ok) {
-            products = await response.json();
-        } else {
-            console.warn("Файл products.json не найден, использую демо-данные");
-            products = JSON.parse(localStorage.getItem('ft_products')) || defaultData;
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#f0fdfa',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            900: '#000000',
+                            card: '#111111',
+                            border: '#222222'
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s ease-out forwards'
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } }
+                    }
+                }
+            }
         }
-    } catch (e) {
-        products = JSON.parse(localStorage.getItem('ft_products')) || defaultData;
-    }
-    renderProducts();
-    updateCartUI();
-}
-        console.log("Файл от бота не найден, использую демо-данные");
-        products = JSON.parse(localStorage.getItem('ft_products')) || defaultData;
-    }
-    renderProducts();
-    updateCartUI();
-}
-        renderProducts();
-        updateCartUI();
-    }
-
-    /* --- ОСТАЛЬНЫЕ ВАШИ ФУНКЦИИ (БЕЗ СОКРАЩЕНИЙ) --- */
-    function renderProducts(filterCat = 'all', searchQuery = '') {
-        const grid = document.getElementById('productGrid');
-        grid.innerHTML = '';
-        
-        let filtered = products;
-        if(filterCat !== 'all') filtered = products.filter(p => p.cat === filterCat);
-        if(searchQuery) filtered = filtered.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
-
-        if(filtered.length === 0) {
-            grid.innerHTML = `<div class="col-span-full text-center py-20 text-gray-500 animate-fade-in">Ничего не найдено</div>`;
-            return;
-        }
-
-        filtered.forEach(p => {
-            const el = document.createElement('div');
-            el.className = 'product-card bg-[#111] rounded-2xl border border-white/5 overflow-hidden group relative transition-all duration-300 hover:-translate-y-2 hover:border-teal-500/30 animate-slide-up';
-            el.innerHTML = `
-                <div class="aspect-[16/9] overflow-hidden relative">
-                    <img src="${escapeHtml(p.img)}" class="w-full h-full object-cover transition duration-700 group-hover:scale-110 group-hover:opacity-80">
-                    <div class="absolute inset-0 bg-gradient-to-t from-[#111] to-transparent opacity-60"></div>
-                    <div class="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-[10px] font-bold text-white border border-white/10 uppercase tracking-wider">${p.cat}</div>
-                </div>
-                <div class="p-5 relative">
-                    <div class="glow-effect absolute inset-0 opacity-0 transition duration-500 pointer-events-none rounded-2xl"></div>
-                    <h3 class="text-white font-bold text-lg leading-tight mb-2 group-hover:text-teal-400 transition line-clamp-1">${escapeHtml(p.name)}</h3>
-                    <div class="flex items-center justify-between mt-4">
-                        <div class="flex flex-col">
-                            <span class="text-xs text-gray-500 line-through">${Math.round(p.price * 1.2)} ₽</span>
-                            <span class="text-xl font-black text-white">${p.price} ₽</span>
-                        </div>
-                        <button onclick="addToCart('${p.id}')" class="bg-white text-black hover:bg-teal-400 w-10 h-10 rounded-full flex items-center justify-center transition shadow-lg shadow-white/10 hover:shadow-teal-400/50 z-10">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-            grid.appendChild(el);
-        });
-    }
-
-    // Сохраняю функции filter, searchItems, scrollToCatalog, toggleCart, addToCart, 
-    // removeFromCart, saveCart, updateCartUI, renderCart точно как в оригинале...
-    // [Остальной код функций 7.html без изменений]
-
-    function checkout() {
-        if(cart.length === 0) return toast('Корзина пуста', 'error');
-        // Если у товара есть прямая ссылка от бота, переходим по ней
-        if (cart.length === 1 && cart[0].link) {
-            window.location.href = cart[0].link;
-        } else {
-            toast('Переход к оплате...', 'success');
-        }
-    }
-
-    /* --- АДМИНКА И ХЕЛПЕРЫ (БЕЗ ИЗМЕНЕНИЙ) --- */
-    // [Функции toggleAdmin, authAdmin, renderAdminList, saveProduct, editProduct, 
-    // deleteProduct, clearAdminForm, escapeHtml, toast оставляю как в файле]
-
-    window.onload = init;
-</script>
+    </script>
 
     <style>
         body { background-color: #050505; color: #e5e5e5; }
@@ -303,7 +236,7 @@
     <div id="cartOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[90] hidden opacity-0 transition-opacity duration-300" onclick="toggleCart()"></div>
     <div id="cartSidebar" class="fixed right-0 top-0 h-full w-full md:w-[450px] bg-[#0b0b0b] border-l border-white/10 z-[100] flex flex-col transform translate-x-full transition-transform duration-300 shadow-2xl">
         <div class="p-6 border-b border-white/5 flex justify-between items-center">
-            <h2 class="text-xl font-bold flex items-center gap-3">
+            <h2 class="text-xl font-bold flex items-center gap-3 text-white">
                 <i class="fas fa-shopping-basket text-teal-500"></i> Корзина
             </h2>
             <button onclick="toggleCart()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400 transition"><i class="fas fa-times"></i></button>
@@ -360,37 +293,34 @@
 
     <script>
         /* --- CORE DATA --- */
-        // Теперь данные будут подгружаться из products.json
+        let products = [];
+        let cart = JSON.parse(localStorage.getItem('ft_cart')) || [];
+        const MASTER_KEY = "1234";
+
         const defaultData = [
             {id: '1', name: 'Grand Theft Auto V: Premium', price: 990, cat: 'games', img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=500', link: '#'},
             {id: '2', name: 'Steam Wallet 20 USD', price: 2100, cat: 'wallets', img: 'https://images.unsplash.com/photo-1629757357457-34749449f1f0?q=80&w=500', link: '#'},
-            {id: '3', name: 'ChatGPT Plus (1 Month)', price: 2500, cat: 'ai', img: 'https://images.unsplash.com/photo-1678911820864-e526ce20a656?q=80&w=500', link: '#'},
-            {id: '4', name: 'NordVPN 1 Year Key', price: 1400, cat: 'soft', img: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=500', link: '#'}
+            {id: '3', name: 'ChatGPT Plus (1 Month)', price: 2500, cat: 'ai', img: 'https://images.unsplash.com/photo-1678911820864-e526ce20a656?q=80&w=500', link: '#'}
         ];
-
-        let products = [];
-        let cart = JSON.parse(localStorage.getItem('ft_cart')) || [];
-        const MASTER_KEY = "1234"; // Сюда можно поставить API ключ 
 
         /* --- INITIALIZATION --- */
         async function init() {
             try {
-                // Загружаем актуальные товары из JSON, который наполнил бот
+                // Попытка загрузить данные из JSON файла бота
                 const response = await fetch('products.json');
                 if (response.ok) {
                     products = await response.json();
-                    console.log("Products loaded from bot file");
                 } else {
                     products = JSON.parse(localStorage.getItem('ft_products')) || defaultData;
                 }
-            } catch (error) {
+            } catch (e) {
                 products = JSON.parse(localStorage.getItem('ft_products')) || defaultData;
             }
             renderProducts();
             updateCartUI();
         }
 
-        /* --- RENDER FUNCTIONS --- */
+        /* --- RENDERING --- */
         function renderProducts(filterCat = 'all', searchQuery = '') {
             const grid = document.getElementById('productGrid');
             grid.innerHTML = '';
@@ -497,9 +427,7 @@
             let total = 0;
             
             if(cart.length === 0) {
-                list.innerHTML = `<div class="text-center text-gray-600 mt-10">
-                    <i class="fas fa-shopping-basket text-4xl mb-4 opacity-20"></i><br>Корзина пуста
-                </div>`;
+                list.innerHTML = `<div class="text-center text-gray-600 mt-10"><i class="fas fa-shopping-basket text-4xl mb-4 opacity-20"></i><br>Корзина пуста</div>`;
                 totalEl.innerText = '0 ₽';
                 return;
             }
@@ -522,20 +450,15 @@
 
         function checkout() {
             if(cart.length === 0) return toast('Корзина пуста', 'error');
-            
-            // Если в корзине один товар, ведем сразу на оплату по реферальной ссылке
-            if (cart.length === 1 && cart[0].link && cart[0].link !== '#') {
-                toast('Переход к оплате...', 'success');
+            if(cart.length === 1 && cart[0].link) {
                 window.open(cart[0].link, '_blank');
-                return;
+            } else {
+                // Если товаров много, переходим на витрину Digiseller
+                window.open('https://www.digiseller.market/asp2/pay_wm.asp?seller_id=1439429', '_blank');
             }
-
-            // Для мульти-оплаты можно добавить интеграцию с корзиной Digiseller
-            toast('Перенаправление в платежный шлюз...', 'success');
-            window.open(`https://www.digiseller.market/asp2/pay_wm.asp?seller_id=1434429`, '_blank'); 
         }
 
-        /* --- ADMIN DASHBOARD --- */
+        /* --- ADMIN LOGIC --- */
         function toggleAdmin() {
             const p = document.getElementById('adminPanel');
             const isHidden = p.classList.contains('hidden');
@@ -582,17 +505,12 @@
                 img: document.getElementById('pImg').value || 'https://placehold.co/400',
                 link: '#'
             };
-
             if(!newItem.name || !newItem.price) return toast('Заполните данные', 'error');
-
             const idx = products.findIndex(p => p.id === id);
             if(idx >= 0) products[idx] = newItem;
             else products.unshift(newItem);
-
             localStorage.setItem('ft_products', JSON.stringify(products));
-            renderAdminList();
-            renderProducts();
-            clearAdminForm();
+            renderAdminList(); renderProducts(); clearAdminForm();
             toast('Товар сохранен');
         }
 
@@ -601,7 +519,6 @@
             document.getElementById('editId').value = p.id;
             document.getElementById('pName').value = p.name;
             document.getElementById('pPrice').value = p.price;
-            document.getElementById('pCat').value = p.cat;
             document.getElementById('pImg').value = p.img;
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
@@ -610,8 +527,7 @@
             if(confirm('Удалить товар?')) {
                 products = products.filter(p => p.id !== id);
                 localStorage.setItem('ft_products', JSON.stringify(products));
-                renderAdminList();
-                renderProducts();
+                renderAdminList(); renderProducts();
                 toast('Удалено', 'error');
             }
         }
@@ -623,7 +539,6 @@
             document.getElementById('pImg').value = '';
         }
 
-        /* --- HELPERS --- */
         function escapeHtml(text) {
             if (!text) return text;
             const map = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'};
@@ -634,15 +549,10 @@
             const c = document.getElementById('toast-container');
             const t = document.createElement('div');
             const colorClass = type === 'error' ? 'border-red-500 text-red-400' : 'border-teal-500 text-teal-400';
-            
             t.className = `bg-[#111] border-l-4 ${colorClass} text-white px-6 py-4 rounded shadow-2xl font-semibold flex items-center gap-3 pointer-events-auto toast-enter toast-enter-active`;
-            t.innerHTML = `<i class="fas ${type==='error'?'fa-exclamation-circle':'fa-check-circle'}</li> <span>${msg}</span>`;
-            
+            t.innerHTML = `<i class="fas ${type==='error'?'fa-exclamation-circle':'fa-check-circle'}"></i> <span>${msg}</span>`;
             c.appendChild(t);
-            setTimeout(() => {
-                t.classList.add('toast-exit', 'toast-exit-active');
-                setTimeout(() => t.remove(), 400);
-            }, 3000);
+            setTimeout(() => { t.classList.add('toast-exit'); setTimeout(() => t.remove(), 400); }, 3000);
         }
 
         window.onload = init;
