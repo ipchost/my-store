@@ -150,7 +150,7 @@
                     </div>
                 </div>
             </div>
-            </div>
+        </div>
     </section>
 
     <section class="py-12 border-b border-white/5 bg-[#0a0a0a]">
@@ -293,20 +293,32 @@
 
     <script>
         /* --- CORE DATA --- */
+        // Теперь данные будут подгружаться из products.json
         const defaultData = [
-            {id: '1', name: 'Grand Theft Auto V: Premium', price: 990, cat: 'games', img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=500'},
-            {id: '2', name: 'Steam Wallet 20 USD', price: 2100, cat: 'wallets', img: 'https://images.unsplash.com/photo-1629757357457-34749449f1f0?q=80&w=500'},
-            {id: '3', name: 'ChatGPT Plus (1 Month)', price: 2500, cat: 'ai', img: 'https://images.unsplash.com/photo-1678911820864-e526ce20a656?q=80&w=500'},
-            {id: '4', name: 'NordVPN 1 Year Key', price: 1400, cat: 'soft', img: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=500'}
+            {id: '1', name: 'Grand Theft Auto V: Premium', price: 990, cat: 'games', img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=500', link: '#'},
+            {id: '2', name: 'Steam Wallet 20 USD', price: 2100, cat: 'wallets', img: 'https://images.unsplash.com/photo-1629757357457-34749449f1f0?q=80&w=500', link: '#'},
+            {id: '3', name: 'ChatGPT Plus (1 Month)', price: 2500, cat: 'ai', img: 'https://images.unsplash.com/photo-1678911820864-e526ce20a656?q=80&w=500', link: '#'},
+            {id: '4', name: 'NordVPN 1 Year Key', price: 1400, cat: 'soft', img: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=500', link: '#'}
         ];
 
-        let products = JSON.parse(localStorage.getItem('ft_products')) || defaultData;
+        let products = [];
         let cart = JSON.parse(localStorage.getItem('ft_cart')) || [];
-        const MASTER_KEY = "1234"; 
+        const MASTER_KEY = "1234"; // Сюда можно поставить API ключ 
 
         /* --- INITIALIZATION --- */
-        function init() {
-            if(!localStorage.getItem('ft_products')) localStorage.setItem('ft_products', JSON.stringify(defaultData));
+        async function init() {
+            try {
+                // Загружаем актуальные товары из JSON, который наполнил бот
+                const response = await fetch('products.json');
+                if (response.ok) {
+                    products = await response.json();
+                    console.log("Products loaded from bot file");
+                } else {
+                    products = JSON.parse(localStorage.getItem('ft_products')) || defaultData;
+                }
+            } catch (error) {
+                products = JSON.parse(localStorage.getItem('ft_products')) || defaultData;
+            }
             renderProducts();
             updateCartUI();
         }
@@ -443,8 +455,17 @@
 
         function checkout() {
             if(cart.length === 0) return toast('Корзина пуста', 'error');
-            toast('Переход к оплате...', 'success');
-            // Интеграция с Digiseller или другим шлюзом
+            
+            // Если в корзине один товар, ведем сразу на оплату по реферальной ссылке
+            if (cart.length === 1 && cart[0].link && cart[0].link !== '#') {
+                toast('Переход к оплате...', 'success');
+                window.open(cart[0].link, '_blank');
+                return;
+            }
+
+            // Для мульти-оплаты можно добавить интеграцию с корзиной Digiseller
+            toast('Перенаправление в платежный шлюз...', 'success');
+            window.open(`https://www.digiseller.market/asp2/pay_wm.asp?seller_id=1434429`, '_blank'); 
         }
 
         /* --- ADMIN DASHBOARD --- */
@@ -491,7 +512,8 @@
                 name: document.getElementById('pName').value,
                 price: document.getElementById('pPrice').value,
                 cat: document.getElementById('pCat').value,
-                img: document.getElementById('pImg').value || 'https://placehold.co/400'
+                img: document.getElementById('pImg').value || 'https://placehold.co/400',
+                link: '#'
             };
 
             if(!newItem.name || !newItem.price) return toast('Заполните данные', 'error');
@@ -547,7 +569,7 @@
             const colorClass = type === 'error' ? 'border-red-500 text-red-400' : 'border-teal-500 text-teal-400';
             
             t.className = `bg-[#111] border-l-4 ${colorClass} text-white px-6 py-4 rounded shadow-2xl font-semibold flex items-center gap-3 pointer-events-auto toast-enter toast-enter-active`;
-            t.innerHTML = `<i class="fas ${type==='error'?'fa-exclamation-circle':'fa-check-circle'}"></i> <span>${msg}</span>`;
+            t.innerHTML = `<i class="fas ${type==='error'?'fa-exclamation-circle':'fa-check-circle'}</li> <span>${msg}</span>`;
             
             c.appendChild(t);
             setTimeout(() => {
