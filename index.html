@@ -36,10 +36,16 @@
     const MASTER_KEY = "1234"; 
 
     /* --- INITIALIZATION (ИСПРАВЛЕНО) --- */
-    async function init() {
+  async function init() {
     try {
+        // Пытаемся загрузить файл, созданный ботом
         const response = await fetch('products.json');
-        if (response.ok) products = await response.json();
+        if (response.ok) {
+            products = await response.json();
+        } else {
+            console.warn("Файл products.json не найден, использую демо-данные");
+            products = JSON.parse(localStorage.getItem('ft_products')) || defaultData;
+        }
     } catch (e) {
         products = JSON.parse(localStorage.getItem('ft_products')) || defaultData;
     }
