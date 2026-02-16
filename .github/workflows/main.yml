@@ -1,0 +1,31 @@
+name: Update Store Data
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Запуск каждые 6 часов
+  workflow_dispatch:      # Кнопка ручного запуска
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run Bot
+        run: python bot.py
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "Digital Store Bot"
+          git config --global user.email "bot@github.com"
+          git add products.json
+          git commit -m "Auto-update products from Digiseller API" || exit 0
+          git push
