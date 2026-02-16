@@ -38,15 +38,14 @@
     /* --- INITIALIZATION (ИСПРАВЛЕНО) --- */
     async function init() {
     try {
-        // Просим сайт загрузить файл, который создал бот
         const response = await fetch('products.json');
-        if (response.ok) {
-            products = await response.json();
-            console.log("Товары загружены из API");
-        } else {
-            throw new Error();
-        }
+        if (response.ok) products = await response.json();
     } catch (e) {
+        products = JSON.parse(localStorage.getItem('ft_products')) || defaultData;
+    }
+    renderProducts();
+    updateCartUI();
+}
         console.log("Файл от бота не найден, использую демо-данные");
         products = JSON.parse(localStorage.getItem('ft_products')) || defaultData;
     }
