@@ -37,20 +37,22 @@
 
     /* --- INITIALIZATION (ИСПРАВЛЕНО) --- */
     async function init() {
-        try {
-            // Пытаемся загрузить данные от бота
-            const response = await fetch('products.json');
-            if (response.ok) {
-                products = await response.json();
-            } else {
-                throw new Error('Файл не найден');
-            }
-        } catch (e) {
-            console.warn("Загрузка локальных данных по умолчанию");
-            products = JSON.parse(localStorage.getItem('ft_products')) || [
-                {id: '1', name: 'Grand Theft Auto V: Premium', price: 990, cat: 'games', img: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=500'}
-            ];
+    try {
+        // Просим сайт загрузить файл, который создал бот
+        const response = await fetch('products.json');
+        if (response.ok) {
+            products = await response.json();
+            console.log("Товары загружены из API");
+        } else {
+            throw new Error();
         }
+    } catch (e) {
+        console.log("Файл от бота не найден, использую демо-данные");
+        products = JSON.parse(localStorage.getItem('ft_products')) || defaultData;
+    }
+    renderProducts();
+    updateCartUI();
+}
         renderProducts();
         updateCartUI();
     }
