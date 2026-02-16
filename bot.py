@@ -2,34 +2,51 @@ import requests
 import json
 import os
 
-# Твои настройки из файла коды.txt
+# Данные из вашего файла коды.txt 
 SELLER_ID = "1439429"
 AGENT_ID = "1439429"
+API_KEY = "7757E1B2A8B74B11ADD1403764506273"
 
 def get_products():
-    print("Запрос товаров из Digiseller...")
-    # Используем API для получения списка товаров продавца
-    url = f"https://api.digiseller.ru/api/seller-goods.ashx?seller_id={SELLER_ID}&rows=100&lang=ru-RU"
+    print("Запрос товаров из Digiseller (актуальный API)...")
     
+    # Используем правильный endpoint API
+    url = "https://api.digiseller.ru/api/goods/list"
+    
+    # Параметры запроса для получения популярных товаров 
+    params = {
+        "seller_id": SELLER_ID,
+        "currency": "RUR",
+        "lang": "ru-RU",
+        "rows": 100,
+        "order": "popular" # Сортировка по популярности для глобальных продаж
+    }
+    
+    headers = {
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0'
+    }
+
     try:
-        headers = {'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0'}
-        r = requests.get(url, headers=headers, timeout=30)
+        r = requests.get(url, params=params, headers=headers, timeout=30)
         r.raise_for_status()
         
         data = r.json()
-        rows = data.get('rows', [])
+        # В новом API список товаров находится в ключе 'rows' или 'items'
+        rows = data.get('rows', []) or data.get('items', [])
         
         products = []
         for item in rows:
             p_id = str(item['id'])
-            # Определяем категорию (логика авто-назначения)
             name_lower = item['name'].lower()
+            
+            # Улучшенная логика категорий для вашего сайта
             category = "games"
-            if "wallet" in name_lower or "пополнение" in name_lower or "card" in name_lower:
+            if any(word in name_lower for word in ["wallet", "пополнение", "card", "gift"]):
                 category = "wallets"
-            elif "chatgpt" in name_lower or "midjourney" in name_lower or "ai" in name_lower:
+            elif any(word in name_lower for word in ["chatgpt", "midjourney", "ai", "plus"]):
                 category = "ai"
-            elif "vpn" in name_lower or "office" in name_lower or "key" in name_lower:
+            elif any(word in name_lower for word in ["vpn", "office", "key", "windows", "софт"]):
                 category = "soft"
 
             products.append({
@@ -37,25 +54,25 @@ def get_products():
                 "name": item['name'],
                 "price": int(item['price_rur']),
                 "cat": category,
-                "img": item['preview_img_url'] if item['preview_img_url'] else "https://placehold.co/500x300",
+                "img": item.get('preview_img_url') or "https://placehold.co/500x300",
                 "link": f"https://www.digiseller.market/asp2/pay_wm.asp?id_d={p_id}&ai={AGENT_ID}"
             })
         
-        print(f"Успешно получено: {len(products)} товаров")
+        print(f"Успешно получено и обработано: {len(products)} товаров")
         return products
     except Exception as e:
-        print(f"Ошибка: {e}")
+        print(f"Ошибка при запросе к API: {e}")
         return []
 
 def main():
     items = get_products()
     if items:
-        # Сохраняем результат в products.json для сайта
+        # Сохранение в файл products.json, который читает ваш index.html 
         with open('products.json', 'w', encoding='utf-8') as f:
             json.dump(items, f, ensure_ascii=False, indent=4)
-        print("Данные синхронизированы с products.json")
+        print("Файл products.json успешно обновлен для сайта.")
     else:
-        print("Обновление не удалось.")
+        print("Не удалось обновить данные. Проверьте настройки API.")
 
 if __name__ == "__main__":
     main()
